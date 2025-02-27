@@ -39,6 +39,7 @@ async function loginUser(req, res, next) {
   }
 
   const { email, password } = req.body;
+  console.log(req.body)
   const user = await userModel.findOne({ email }).select('+password');
 
   if (!user) {
@@ -52,17 +53,34 @@ async function loginUser(req, res, next) {
   }
 
   const token = user.generateAuthToken();
-  res.status(200).json({ token, user }); 
+  res.status(201).json({ token, user }); 
 }
 
 async function getUserProfile(req,res,next){
   res.status(200).json(req.user);
 }
-async function logoutUser(req,res,next){
-   res.clearCookie('token');
-   const token = req.cookies.token || req.headers.authorization
-   await BlacklistToken.create({token})
-   res.status(200).json({message : 'Logged out'})
+async function logoutUser(req, res, next) {
+  try {
+      let token = req.cookies.token || (req.headers.authorization ? req.headers.authorization.split(" ")[1] : null);
 
+      if (!token) {
+          return res.status(400).json({ message: "No token found" });
+      }
+
+      token = token.trim(); // Ensure no extra spaces
+
+      // Check if the token is already blacklisted
+      const isBlacklisted = await BlacklistToken.findOne({ token });
+      if (!isBlacklisted) {
+          await BlacklistToken.create({ token });
+      }
+
+      res.clearCookie("token"); // Clear token from cookies
+      res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Internal server error" });
+  }
 }
+
 export  {registerUser,loginUser,getUserProfile,logoutUser};

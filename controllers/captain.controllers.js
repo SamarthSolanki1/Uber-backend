@@ -1,7 +1,8 @@
-import captainSchema from "../models/captain.model.js";
+import captainmodel from "../models/captain.model.js";
 import createCaptain from "../services/captain.service.js";
 import { validationResult } from "express-validator";
 import BlacklistToken from "../models/blacklistToken.model.js";
+
 
 async function registerCaptain(req,res,next) {
     const errors = validationResult(req);
@@ -11,16 +12,16 @@ async function registerCaptain(req,res,next) {
     }
     const { fullname, email, password,mobileNumber, vehicle } = req.body;
 
-    const isCaptainAlreadyExist = await captainModel.findOne({ email });
+    const isCaptainAlreadyExist = await captainmodel.findOne({ email });
 
     if (isCaptainAlreadyExist) {
         return res.status(400).json({ message: 'Captain already exist' });
     }
 
 
-    const hashedPassword = await captainModel.hashPassword(password);
+    const hashedPassword = await captainmodel.hashPassword(password);
 
-    const captain = await captainService.createCaptain({
+    const captain = await createCaptain({
         firstname: fullname.firstname,
         lastname: fullname.lastname,
         email,
@@ -44,12 +45,12 @@ async function loginCaptain(req,res,next){
       return res.status(400).json({ errors: errors.array() });
     }
     const {email,password} = req.body;
-    const captain = await captainSchema.findOne({email}).select('+password');
+    const captain = await captainmodel.findOne({email}).select('+password');
     if (!captain) {
         return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const isMatch = await captain.comparePassword(password);
+    const isMatch = await captain.comparePasswords(password);
 
     if (!isMatch) {
         return res.status(401).json({ message: 'Invalid email or password' });
