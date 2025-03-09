@@ -77,4 +77,4 @@ async function getCaptainIntheRadius(ltd,lng,radius){
 
     return captains;
 }
-export {getAddressCoordinate,getDistanceTime,getautoSuggestions}
+export {getAddressCoordinate,getDistanceTime,getautoSuggestions,getCaptainIntheRadius}
